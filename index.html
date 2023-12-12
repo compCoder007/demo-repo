@@ -3,39 +3,39 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>USB Drive Detector</title>
+  <title>File System Access</title>
 </head>
 <body>
-  <button id="connectButton">Detect USB Drives</button>
-  <ul id="deviceList"></ul>
+  <button id="selectFileButton">Select File</button>
+  <ul id="fileInfo"></ul>
 
   <script>
-    document.getElementById('connectButton').addEventListener('click', async () => {
+    document.getElementById('selectFileButton').addEventListener('click', async () => {
       try {
-        // Request permission to access USB devices
-        const device = await navigator.usb.requestDevice({ filters: [] });
+        // Request permission to access the file system
+        const [fileHandle] = await window.showOpenFilePicker();
 
-        // Open the USB device
-        await device.open();
+        // Get the file
+        const file = await fileHandle.getFile();
 
-        // Retrieve information about the USB device
-        const deviceInfo = {
-          productName: device.productName || 'Unknown Product',
-          vendorName: device.vendorName || 'Unknown Vendor',
-          serialNumber: device.serialNumber || 'Unknown Serial Number',
-        };
+        // Display file information
+        const fileInfo = document.getElementById('fileInfo');
+        fileInfo.innerHTML = '';
 
-        // Display device information
-        const deviceList = document.getElementById('deviceList');
-        const listItem = document.createElement('li');
-        listItem.textContent = `Product: ${deviceInfo.productName}, Vendor: ${deviceInfo.vendorName}, Serial Number: ${deviceInfo.serialNumber}`;
-        deviceList.appendChild(listItem);
+        const listItemName = document.createElement('li');
+        listItemName.textContent = `File Name: ${file.name}`;
+        fileInfo.appendChild(listItemName);
 
-        // Close the USB device when done
-        await device.close();
+        const listItemSize = document.createElement('li');
+        listItemSize.textContent = `File Size: ${file.size} bytes`;
+        fileInfo.appendChild(listItemSize);
+
+        const listItemLastModified = document.createElement('li');
+        listItemLastModified.textContent = `Last Modified: ${file.lastModified}`;
+        fileInfo.appendChild(listItemLastModified);
       } catch (error) {
-        console.error('Error detecting USB drives:', error);
-        alert('Error detecting USB drives. Please check the console for details.');
+        console.error('Error selecting file:', error);
+        alert('Error selecting file. Please check the console for details.');
       }
     });
   </script>
