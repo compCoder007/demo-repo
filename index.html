@@ -1,12 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>Hello World
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>USB Drive Detector</title>
 </head>
 <body>
-    <p>This is a sample html page</p>
+  <ul id="deviceList"></ul>
+
+  <script>
+    const deviceList = document.getElementById('deviceList');
+
+    function updateDeviceList() {
+      navigator.mediaDevices.enumerateDevices()
+        .then(devices => {
+          // Clear existing list
+          deviceList.innerHTML = '';
+
+          devices.forEach(device => {
+            // Check if the device is a USB drive (a heuristic approach)
+            if (device.kind === 'videoinput' && device.label.toLowerCase().includes('usb')) {
+              // Display device information
+              const listItem = document.createElement('li');
+              listItem.textContent = `Device: ${device.label}`;
+              deviceList.appendChild(listItem);
+            }
+          });
+
+          if (deviceList.childElementCount === 0) {
+            // No USB drives detected
+            const listItem = document.createElement('li');
+            listItem.textContent = 'No USB drives detected.';
+            deviceList.appendChild(listItem);
+          }
+        })
+        .catch(error => {
+          console.error('Error detecting USB drives:', error);
+          alert('Error detecting USB drives. Please check the console for details.');
+        });
+    }
+
+    // Update the device list when the storage status changes (USB drive connected/removed)
+    window.addEventListener('storage', updateDeviceList);
+
+    // Initial update
+    updateDeviceList();
+  </script>
 </body>
 </html>
