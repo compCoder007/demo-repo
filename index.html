@@ -6,45 +6,38 @@
   <title>USB Drive Detector</title>
 </head>
 <body>
+  <button id="connectButton">Detect USB Drives</button>
   <ul id="deviceList"></ul>
 
   <script>
-    const deviceList = document.getElementById('deviceList');
+    document.getElementById('connectButton').addEventListener('click', async () => {
+      try {
+        // Request permission to access USB devices
+        const device = await navigator.usb.requestDevice({ filters: [] });
 
-    function updateDeviceList() {
-      navigator.mediaDevices.enumerateDevices()
-        .then(devices => {
-          // Clear existing list
-          deviceList.innerHTML = '';
+        // Open the USB device
+        await device.open();
 
-          devices.forEach(device => {
-            // Check if the device is a USB drive (a heuristic approach)
-            if (device.kind === 'videoinput' && device.label.toLowerCase().includes('usb')) {
-              // Display device information
-              const listItem = document.createElement('li');
-              listItem.textContent = `Device: ${device.label}`;
-              deviceList.appendChild(listItem);
-            }
-          });
+        // Retrieve information about the USB device
+        const deviceInfo = {
+          productName: device.productName || 'Unknown Product',
+          vendorName: device.vendorName || 'Unknown Vendor',
+          serialNumber: device.serialNumber || 'Unknown Serial Number',
+        };
 
-          if (deviceList.childElementCount === 0) {
-            // No USB drives detected
-            const listItem = document.createElement('li');
-            listItem.textContent = 'No USB drives detected.';
-            deviceList.appendChild(listItem);
-          }
-        })
-        .catch(error => {
-          console.error('Error detecting USB drives:', error);
-          alert('Error detecting USB drives. Please check the console for details.');
-        });
-    }
+        // Display device information
+        const deviceList = document.getElementById('deviceList');
+        const listItem = document.createElement('li');
+        listItem.textContent = `Product: ${deviceInfo.productName}, Vendor: ${deviceInfo.vendorName}, Serial Number: ${deviceInfo.serialNumber}`;
+        deviceList.appendChild(listItem);
 
-    // Update the device list when the storage status changes (USB drive connected/removed)
-    window.addEventListener('storage', updateDeviceList);
-
-    // Initial update
-    updateDeviceList();
+        // Close the USB device when done
+        await device.close();
+      } catch (error) {
+        console.error('Error detecting USB drives:', error);
+        alert('Error detecting USB drives. Please check the console for details.');
+      }
+    });
   </script>
 </body>
 </html>
